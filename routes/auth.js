@@ -1,71 +1,116 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
 
-// Registration
+// Register
 router.post('/register', (req, res) => {
-    const { username, email, password } = req.body;
-  
-    // Hash password menggunakan bcrypt
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-      if (err) {
-        return res.status(500).json({ error: 'Error hashing password' });
-      }
-      // insert user ke db
-      const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
-      db.query(query, [username, email, hashedPassword], (err, result) => {
-        if (err) {
-          return res.status(500).json({ error: 'Database error' });
-        }
-  
-        res.status(200).json({ message: 'User registered successfully!' });
+  const { name, email, password } = req.body;
+
+  // Validasi input
+  if (!name || !email || !password || password.length < 8) {
+      return res.status(400).json({
+          error: true,
+          message: 'Invalid input. Password must be at least 8 characters long.'
       });
-    });
+  }
+
+  // Hash password menggunakan bcrypt
+  bcrypt.hash(password, 8, (err, hashedPassword) => {
+      if (err) {
+          return res.status(500).json({ error: true, message: 'Error hashing password' });
+      }
+
+      // Cek apakah email sudah ada di database
+      const checkEmailQuery = 'SELECT * FROM users WHERE email = ?';
+      db.query(checkEmailQuery, [email], (err, result) => {
+          if (err) {
+              return res.status(500).json({ error: true, message: 'Database error' });
+          }
+          if (result.length > 0) {
+              return res.status(400).json({ error: true, message: 'Email already registered' });
+          }
+
+          // Insert user ke database
+          const insertQuery = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+          db.query(insertQuery, [name, email, hashedPassword], (err) => {
+              if (err) {
+                  return res.status(500).json({ error: true, message: 'Database error' });
+              }
+
+              // Respons sukses
+              res.status(201).json({
+                  error: false,
+                  message: 'User Created'
+              });
+          });
+      });
   });
+});
+
 
 // Login
 router.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    // find user
-    const query = 'SELECT * FROM users WHERE email = ?';
-    db.query(query, [email], (err, result) => {
+  const { email, password } = req.body;
+
+  // Validasi input
+  if (!email || !password) {
+      return res.status(400).json({
+          error: true,
+          message: 'Invalid input. Email and password are required.'
+      });
+  }
+
+  // Cari user berdasarkan email
+  const query = 'SELECT * FROM users WHERE email = ?';
+  db.query(query, [email], (err, result) => {
       if (err) {
-        return res.status(500).json({ error: 'Database error' });
+          return res.status(500).json({ error: true, message: 'Database error' });
       }
       if (result.length === 0) {
-        return res.status(400).json({ error: 'User not found' });
+          return res.status(404).json({ error: true, message: 'User not found' });
       }
-  
-      // Compare password with the hash stored in the database
-      bcrypt.compare(password, result[0].password, (err, isMatch) => {
-        if (err) {
-          return res.status(500).json({ error: 'Error comparing passwords' });
-        }
-  
-        if (isMatch) {
-          // Create JWT token if password is correct
-          const token = jwt.sign({ userId: result[0].user_id }, 'your_jwt_secret', { expiresIn: '1h' });
-  
-          // Insert the token into the sessions table
-          const insertSessionQuery = 'INSERT INTO sessions (user_id, token) VALUES (?, ?)';
-          db.query(insertSessionQuery, [result[0].user_id, token], (err, sessionResult) => {
-            if (err) {
-              return res.status(500).json({ error: 'Error creating session' });
-            }
-  
-            res.status(200).json({ message: 'Login successful', token });
-          });
-        } else {
-          res.status(400).json({ error: 'Invalid credentials' });
-        }
-      });
-    });
-  });
 
-// logout
+      // Validasi password
+      bcrypt.compare(password, result[0].password, (err, isMatch) => {
+          if (err || !isMatch) {
+              return res.status(400).json({ error: true, message: 'Invalid credentials' });
+          }
+
+          // Buat token JWT
+          const token = jwt.sign(
+              { userId: result[0].user_id, name: result[0].username },
+              'your_jwt_secret',
+              { expiresIn: '1h' }
+          );
+
+          // Simpan token ke tabel sessions
+          const insertSessionQuery = 'INSERT INTO sessions (user_id, token) VALUES (?, ?)';
+          db.query(insertSessionQuery, [result[0].user_id, token], (err) => {
+              if (err) {
+                  return res.status(500).json({ error: true, message: 'Error creating session' });
+              }
+
+              // Respons sukses
+              res.status(200).json({
+                  error: false,
+                  message: 'success',
+                  loginResult: {
+                      userId: result[0].user_id,
+                      name: result[0].username,
+                      token
+                  }
+              });
+          });
+      });
+  });
+});
+
+
+
+// logout >> pindah di profile page
 router.delete('/logout', authenticate, (req, res) => {
   const token = req.header('Authorization');
 
