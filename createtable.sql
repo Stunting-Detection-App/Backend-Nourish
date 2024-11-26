@@ -15,7 +15,7 @@ CREATE TABLE sessions (
 );
 
 CREATE TABLE journals (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    journals_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     photo_url VARCHAR(100),
     description TEXT NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE journals (
 );
 
 CREATE TABLE predict (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    predict_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     tinggi FLOAT NOT NULL,
     umur INT NOT NULL,
