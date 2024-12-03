@@ -1,16 +1,9 @@
-const express = require('express');
-const multer = require('multer');
-const db = require('../db');
-const router = express.Router();
+const db = require('../config/db');
 const { uploadToGcs } = require('../middleware/uploadImage');
 
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 1 * 1024 * 1024 },
-});
 
 // Add New Story
-router.post('/stories', upload.single('photo'), uploadToGcs, (req, res) => {
+const addStory = (req, res) => {
     const { description, lat, lon } = req.body;
     const photoUrl = req.file?.cloudStoragePublicUrl;
 
@@ -20,8 +13,7 @@ router.post('/stories', upload.single('photo'), uploadToGcs, (req, res) => {
 
     const query = 
         `INSERT INTO journals (user_id, photo_url, description, latitude, longitude) 
-        VALUES (?, ?, ?, ?, ?)`
-    ;
+        VALUES (?, ?, ?, ?, ?)`;
     const values = [req.user.userId, photoUrl, description, lat || null, lon || null];
 
     db.query(query, values, (err, result) => {
@@ -32,10 +24,10 @@ router.post('/stories', upload.single('photo'), uploadToGcs, (req, res) => {
 
         res.status(201).json({ error: false, message: 'success' });
     });
-});
+};
 
-// Add New Story with Guest Account
-router.post('/stories/guest', upload.single('photo'), uploadToGcs, (req, res) => {
+// Add New Story dengan guest account
+const addStoryGuest = (req, res) => {
     const { description, lat, lon } = req.body;
     const photoUrl = req.file?.cloudStoragePublicUrl;
 
@@ -45,8 +37,7 @@ router.post('/stories/guest', upload.single('photo'), uploadToGcs, (req, res) =>
 
     const query = `
         INSERT INTO journals (user_id, photo_url, description, latitude, longitude) 
-        VALUES (NULL, ?, ?, ?, ?)
-    `;
+        VALUES (NULL, ?, ?, ?, ?)`;
     const values = [photoUrl, description, lat || null, lon || null];
 
     db.query(query, values, (err, result) => {
@@ -57,18 +48,17 @@ router.post('/stories/guest', upload.single('photo'), uploadToGcs, (req, res) =>
 
         res.status(201).json({ error: false, message: 'success' });
     });
-});
+};
 
 // Get All Stories
-router.get('/stories', (req, res) => {
+const getAllStories = (req, res) => {
     const { page = 1, size = 10, location = 0 } = req.query;
     const offset = (page - 1) * size;
 
     let query = `
         SELECT journals_id, user_id, photo_url, description, latitude, longitude, created_at 
         FROM journals 
-        LIMIT ?, ?
-    `;
+        LIMIT ?, ?`;
     const values = [offset, parseInt(size)];
 
     if (location == 1) {
@@ -76,8 +66,7 @@ router.get('/stories', (req, res) => {
             SELECT journals_id, user_id, photo_url, description, latitude, longitude, created_at 
             FROM journals 
             WHERE latitude IS NOT NULL AND longitude IS NOT NULL 
-            LIMIT ?, ?
-        `;
+            LIMIT ?, ?`;
     }
 
     db.query(query, values, (err, results) => {
@@ -92,17 +81,16 @@ router.get('/stories', (req, res) => {
             listStory: results,
         });
     });
-});
+};
 
 // Get Detail Story
-router.get('/stories/:journals_id', (req, res) => {
+const getStoryDetail = (req, res) => {
     const { journals_id } = req.params;
 
     const query = `
         SELECT journals_id, user_id, photo_url, description, latitude, longitude, created_at 
         FROM journals 
-        WHERE journals_id = ?
-    `;
+        WHERE journals_id = ?`;
     db.query(query, [journals_id], (err, result) => {
         if (err) {
             console.error(err);
@@ -119,6 +107,11 @@ router.get('/stories/:journals_id', (req, res) => {
             story: result[0],
         });
     });
-});
+};
 
-module.exports = router;
+module.exports = {
+    addStory,
+    addStoryGuest,
+    getAllStories,
+    getStoryDetail,
+};

@@ -7,11 +7,11 @@ const dateFormat = require('dateformat');
 const pathKey = path.resolve('./config/serviceaccountkey.json');
 
 const gcs = new Storage({
-    projectId: '<projectid>',
+    projectId: 'capstone-project-441809',
     keyFilename: pathKey,
 });
 
-const bucketName = '<bucket-name>';
+const bucketName = 'nourish_bucket';
 const bucket = gcs.bucket(bucketName);
 
 function getPublicUrl(filename) {
@@ -20,6 +20,18 @@ function getPublicUrl(filename) {
 
 const uploadToGcs = (req, res, next) => {
     if (!req.file) return next();
+
+    // Validasi ukuran file
+    if (req.file.size > 10 * 1024 * 1024) {
+        return res.status(400).json({ error: 'File size exceeds the 10MB limit.' });
+    }
+
+    // Validasi tipe file 
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ error: 'Invalid file type. Only JPEG, PNG, and GIF are allowed.' });
+    }
+    
     const gcsname = `${dateFormat(new Date(), 'yyyymmdd-HHMMss')}-${req.file.originalname}`;
     const file = bucket.file(gcsname);
 
