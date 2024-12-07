@@ -18,7 +18,7 @@ app.use(cors());
 
 // Routes
 app.use('/auth', authRoutes);
-app.use('/journals', journalsRoutes);
+app.use('/journal', journalsRoutes);
 app.use('/profile', profileRoutes);
 app.use('/predict', predictionRoutes);
 

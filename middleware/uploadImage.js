@@ -1,17 +1,19 @@
 'use strict';
 require('dotenv').config();
 const { Storage } = require('@google-cloud/storage');
-const fs = require('fs');
-const path = require('path');
-const dateFormat = require('dateformat');
-const pathKey = path.resolve('./config/serviceaccountkey.json');
+//const fs = require('fs');
+//const path = require('path');
+// const dateFormat = require('dateformat');
+const dayjs = require('dayjs');
+//const pathKey = path.resolve('./config/serviceaccountkey.json');
 
-const gcs = new Storage({
+/*const gcs = new Storage({
     projectId: 'capstone-project-441809',
     keyFilename: pathKey,
-});
+});*/
 
-const bucketName = 'nourish_bucket';
+const gcs = new Storage()
+const bucketName = process.env.GCP_BUCKET_NAME;
 const bucket = gcs.bucket(bucketName);
 
 function getPublicUrl(filename) {
@@ -32,7 +34,8 @@ const uploadToGcs = (req, res, next) => {
         return res.status(400).json({ error: 'Invalid file type. Only JPEG, PNG, and GIF are allowed.' });
     }
     
-    const gcsname = `${dateFormat(new Date(), 'yyyymmdd-HHMMss')}-${req.file.originalname}`;
+    //const gcsname = `${dateFormat(new Date(), 'yyyymmdd-HHMMss')}-${req.file.originalname}`;
+    const gcsname = `${dayjs().format('YYYYMMDD-HHmmss')}-${req.file.originalname}`;
     const file = bucket.file(gcsname);
 
     const stream = file.createWriteStream({

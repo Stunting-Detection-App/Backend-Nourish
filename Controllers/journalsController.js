@@ -4,25 +4,42 @@ const { uploadToGcs } = require('../middleware/uploadImage');
 
 // Add New Story
 const addStory = (req, res) => {
-    const { description, lat, lon } = req.body;
-    const photoUrl = req.file?.cloudStoragePublicUrl;
-
-    if (!description || !photoUrl) {
-        return res.status(400).json({ error: true, message: 'Description and photo are required' });
+    // Cek apakah file ada di request
+    if (!req.file) {
+        return res.status(400).json({ error: true, message: 'File upload failed' });
     }
 
-    const query = 
-        `INSERT INTO journals (user_id, photo_url, description, latitude, longitude) 
-        VALUES (?, ?, ?, ?, ?)`;
-    const values = [req.user.userId, photoUrl, description, lat || null, lon || null];
-
-    db.query(query, values, (err, result) => {
+    // Panggil fungsi uploadToGcs untuk meng-upload file ke Google Cloud Storage
+    uploadToGcs(req.file, (err, photoUrl) => {
         if (err) {
-            console.error(err);
-            return res.status(500).json({ error: true, message: 'Database error' });
+            return res.status(500).json({ error: true, message: 'Failed to upload image to GCS' });
         }
 
-        res.status(201).json({ error: false, message: 'success' });
+        // Mendapatkan data dari body request
+        const { description, lat, lon } = req.body;
+        const photoUrl = req.file?.cloudStoragePublicUrl;
+
+        // Validasi deskripsi dan URL foto
+        if (!description || !photoUrl) {
+            return res.status(400).json({ error: true, message: 'Description and photo are required' });
+        }
+
+        // Query untuk memasukkan data ke database
+        const query = `
+            INSERT INTO journals (user_id, photo_url, description, latitude, longitude) 
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        const values = [req.user.userId, photoUrl, description, lat || null, lon || null];
+
+        // Simpan data ke database
+        db.query(query, values, (err, result) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: true, message: 'Database error' });
+            }
+
+            res.status(201).json({ error: false, message: 'success' });
+        });
     });
 };
 

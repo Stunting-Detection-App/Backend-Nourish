@@ -16,9 +16,9 @@ const upload = multer({
 });
 
 
-router.post('/stories', authenticate, upload.single('photo'), uploadToGcs, addStory);
-router.post('/stories/guest', upload.single('photo'), uploadToGcs, addStoryGuest);
-router.get('/stories', getAllStories);
-router.get('/stories/:journals_id', getStoryDetail);
+router.post('/journal', authenticate, upload.single('photo'), uploadToGcs, addStory);
+router.post('/journal/guest', upload.single('photo'), uploadToGcs, addStoryGuest);
+router.get('/journal', getAllStories);
+router.get('/journal/:journals_id', getStoryDetail);
 
 module.exports = router;
