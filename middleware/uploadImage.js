@@ -1,16 +1,8 @@
 'use strict';
 require('dotenv').config();
 const { Storage } = require('@google-cloud/storage');
-//const fs = require('fs');
-//const path = require('path');
-// const dateFormat = require('dateformat');
-const dayjs = require('dayjs');
-//const pathKey = path.resolve('./config/serviceaccountkey.json');
 
-/*const gcs = new Storage({
-    projectId: 'capstone-project-441809',
-    keyFilename: pathKey,
-});*/
+const dayjs = require('dayjs');
 
 const gcs = new Storage()
 const bucketName = process.env.GCP_BUCKET_NAME;
@@ -21,6 +13,7 @@ function getPublicUrl(filename) {
 }
 
 const uploadToGcs = (req, res, next) => {
+    console.log('File uploaded:', req.file);
     if (!req.file) return next();
 
     // Validasi ukuran file

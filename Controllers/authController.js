@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
+const { v4: uuidv4 } = require('uuid');
 
 // Register
 const register = (req, res) => {
@@ -40,9 +41,9 @@ const register = (req, res) => {
               message: 'Email already registered',
             });
           }
-    
-          const insertQuery = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
-          db.query(insertQuery, [name, email, hashedPassword], (err) => {
+          const userId = uuidv4();
+          const insertQuery = 'INSERT INTO users (user_id, username, email, password) VALUES (?, ?, ?, ?)';
+          db.query(insertQuery, [userId, name, email, hashedPassword], (err) => {
             if (err) {
               console.error('Error inserting user into database:', err);
               return res.status(500).json({
@@ -83,7 +84,11 @@ const login = (req, res) => {
       }
   
       bcrypt.compare(password, result[0].password, (err, isMatch) => {
-        if (err || !isMatch) {
+        if (err) {
+          console.error('Error comparing password:', err);
+          return res.status(500).json({ error: true, message: 'Server error' });
+        }
+        if (!isMatch) {
           return res.status(400).json({ error: true, message: 'Invalid credentials' });
         }
   
@@ -92,9 +97,9 @@ const login = (req, res) => {
           process.env.JWT_SECRET,
           { expiresIn: '1h' }
         );
-  
-        const insertSessionQuery = 'INSERT INTO sessions (user_id, token) VALUES (?, ?)';
-        db.query(insertSessionQuery, [result[0].user_id, token], (err) => {
+        const sessionId = uuidv4();
+        const insertSessionQuery = 'INSERT INTO sessions (sessi_id, user_id, token) VALUES (?, ?, ?)';
+        db.query(insertSessionQuery, [sessionId, result[0].user_id, token], (err) => {
           if (err) {
             return res.status(500).json({ error: true, message: 'Error creating session' });
           }

@@ -1,12 +1,21 @@
-const db = require('../config/db');
+/*const db = require('../config/db');
 const tf = require('@tensorflow/tfjs-node');
 
 // Path ke model
-const modelPath = process.env.MODEL_PATH;
+const modelPath = process.env.ML_API_URL;
 
 // POST method Prediction
 const predict = (req, res) => {
     const { age, gender, height } = req.body;
+    if (!age || age <= 0 || !Number.isInteger(Number(age))) {
+      return res.status(400).json({ error: true, message: 'Invalid age' });
+    }
+    if (!['male', 'female'].includes(gender)) {
+      return res.status(400).json({ error: true, message: 'Invalid gender' });
+    }
+    if (!height || height <= 0) {
+      return res.status(400).json({ error: true, message: 'Invalid height' });
+    }
     const predictions = req.predictionResult; // Array hasil prediksi dari model
   
     if (!predictions || !Array.isArray(predictions)) {
@@ -78,4 +87,4 @@ const getHistory = (req, res) => {
     });
   };
   
-  module.exports = { predict, getHistory };
+  module.exports = { predict, getHistory };*/
