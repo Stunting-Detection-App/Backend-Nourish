@@ -22,3 +22,5 @@
     "email": "user1@gmail.com",
     "password": "password123"
   }
+
+[Postman Url](https://drive.google.com/drive/folders/16HKeUbVj5d60eYlkc9oxulc6upzshpsr?usp=sharing) 
