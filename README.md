@@ -56,6 +56,7 @@
       "Content-Type": "multipart/form-data"
   }
 - **Body (form-data):**
+  
 | Key         | Type     | Description                           |
 |-------------|----------|---------------------------------------|
 | `photo`     | File     | Gambar jurnal (wajib).               |
@@ -68,6 +69,7 @@
 - **Endpoint**: `/journal`
 - **Method**: `GET`
 - **Query Parameters:**
+  
 | Parameter | Type   | Description                                            |
 |-----------|--------|--------------------------------------------------------|
 | `page`    | Number | Halaman data (default: 1).                             |
@@ -82,4 +84,3 @@
 
 
 [Postman Url](https://drive.google.com/drive/folders/16HKeUbVj5d60eYlkc9oxulc6upzshpsr?usp=sharing) 
-
