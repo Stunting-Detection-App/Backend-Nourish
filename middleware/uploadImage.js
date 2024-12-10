@@ -17,8 +17,8 @@ const uploadToGcs = (req, res, next) => {
     if (!req.file) return next();
 
     // Validasi ukuran file
-    if (req.file.size > 10 * 1024 * 1024) {
-        return res.status(400).json({ error: 'File size exceeds the 10MB limit.' });
+    if (req.file.size > 1 * 1024 * 1024) {
+        return res.status(400).json({ error: 'File size exceeds the 1MB limit.' });
     }
 
     // Validasi tipe file 

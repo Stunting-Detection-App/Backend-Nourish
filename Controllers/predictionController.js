@@ -1,49 +1,53 @@
-/*const db = require('../config/db');
-const tf = require('@tensorflow/tfjs-node');
+const db = require('../config/db');
+const { v4: uuidv4 } = require('uuid');
 
-// Path ke model
-const modelPath = process.env.ML_API_URL;
-
-// POST method Prediction
+//POST method Prediction
 const predict = (req, res) => {
     const { age, gender, height } = req.body;
+
+    // Validasi input
     if (!age || age <= 0 || !Number.isInteger(Number(age))) {
-      return res.status(400).json({ error: true, message: 'Invalid age' });
+        return res.status(400).json({ error: true, message: 'Invalid age' });
     }
     if (!['male', 'female'].includes(gender)) {
-      return res.status(400).json({ error: true, message: 'Invalid gender' });
+        return res.status(400).json({ error: true, message: 'Invalid gender' });
     }
     if (!height || height <= 0) {
-      return res.status(400).json({ error: true, message: 'Invalid height' });
+        return res.status(400).json({ error: true, message: 'Invalid height' });
     }
-    const predictions = req.predictionResult; // Array hasil prediksi dari model
-  
-    if (!predictions || !Array.isArray(predictions)) {
-      return res.status(400).json({ error: true, message: 'Invalid prediction result' });
-    }
-  
     // Cari index dengan nilai terbesar
     const resultIndex = predictions.indexOf(Math.max(...predictions));
-  
     // Mapping index ke string klasifikasi
     const classification = [
       "Severely Stunted",
       "Stunted",
       "Normal",
-      "High",
+      "High"
     ];
-    const result = resultIndex >= 0 ? classification[resultIndex] : "Unknown";
+
+    const result = classification[resultIndex] || "Unknown"; // Mengambil hasil klasifikasi
+    const description = result === "Severely Stunted" ? "A" :
+                        result === "Stunted" ? "B" :
+                        result === "Normal" ? "C" :
+                        result === "High" ? "D" :
+                        "Description unavailable";
   
     // Simpan hasil ke database
+    const userId = req.user.userId;
+    const predictionId = uuidv4();
     const query = `
-      INSERT INTO predictions (user_id, age, gender, height, prediction)
-      VALUES (?, ?, ?, ?, ?)`;
+      INSERT INTO predictions (prediction_id, user_id, age, gender, height, prediction, result, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
     const values = [
-      req.user.userId, // ID user dari token
+      predictionId,
+      userId,
       age,
       gender,
       height,
-      JSON.stringify({ predictions, result }), // Simpan array prediksi dan hasilnya
+      JSON.stringify(predictions),
+      result,
+      description
     ];
   
     db.query(query, values, (err) => {
@@ -55,10 +59,6 @@ const predict = (req, res) => {
       res.status(201).json({
         error: false,
         message: 'Prediction saved successfully',
-        result: {
-          classification: result,
-          probabilities: predictions,
-        },
       });
     });
   };
@@ -66,25 +66,45 @@ const predict = (req, res) => {
 
 // GET Method History Prediction
 const getHistory = (req, res) => {
-    const query = `
-      SELECT id, age, gender, height, prediction, created_at
-      FROM predictions
-      WHERE user_id = ? 
-      ORDER BY created_at DESC`;
-    const values = [req.user.userId];
+  const userId = req.user.userId;
+  const query = `
+    SELECT prediction_id, age, gender, height, prediction, result, description, created_at
+    FROM predictions
+    WHERE user_id = ? 
+    ORDER BY created_at DESC
+    `;
+
+    const values = [userId]
   
     db.query(query, values, (err, results) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ error: true, message: 'Database error' });
       }
+      if (results.length === 0) {
+        return res.status(404).json({
+            error: false,
+            message: 'No prediction history found',
+            history: []
+        });
+      }
+
+      const formattedResults = results.map(result => ({
+        prediction_id: result.prediction_id,
+        age: result.age,
+        gender: result.gender,
+        height: result.height,
+        result: result.result,
+        description: result.description,
+        created_at: result.created_at
+    }));
   
       res.status(200).json({
         error: false,
         message: 'Prediction history fetched successfully',
-        history: results,
+        history: formattedResults ,
       });
     });
   };
   
-  module.exports = { predict, getHistory };*/
+  module.exports = { predict, getHistory };

@@ -1,201 +1,87 @@
 const db = require('../config/db');
-//const { uploadToGcs } = require('../middleware/uploadImage');
 const { v4: uuidv4 } = require('uuid');
 
-
-// Add New Story
-/*const addStory = (req, res) => {
-    // Cek apakah file ada di request
+const createJournal = (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ error: true, message: 'File upload failed' });
+        return res.status(400).json({ error: true, message: 'Image file is required' });
     }
-
-    // Panggil fungsi uploadToGcs untuk meng-upload file ke Google Cloud Storage
-    uploadToGcs(req.file, (err, photoUrl) => {
-        if (err) {
-            return res.status(500).json({ error: true, message: 'Failed to upload image to GCS' });
-        }
-
-        // Mendapatkan data dari body request
-        const photoUrl = req.file?.cloudStoragePublicUrl;
-        const { description, lat, lon } = req.body;
-
-        // Validasi deskripsi dan URL foto
-        if (!description || !photoUrl) {
-            return res.status(400).json({ error: true, message: 'Description and photo are required' });
-        }
-
-        // Query untuk memasukkan data ke database
-        const journalsId = uuidv4();
-        const query = `
-            INSERT INTO journals (journals_id, user_id, photo_url, description, latitude, longitude) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
-        const values = [journalsId, req.user.userId, photoUrl, description, lat || null, lon || null];
-
-        // Simpan data ke database
-        db.query(query, values, (err, result) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ error: true, message: 'Database error' });
-            }
-        
-            //console.log('Inserted record with ID:', result.insertId);
-            res.status(201).json({
-                error: false,
-                message: 'Story added successfully',
-                journalId: journalsId
-            });
-        });
-    });
-};*/
-/*const addStory = (req, res) => {
-    // Ambil data dari request
-    const photoUrl = req.file?.cloudStoragePublicUrl;
-    const { description, lat, lon } = req.body;
-
-    // Validasi data
-    if (!description || !photoUrl) {
-        return res.status(400).json({ error: true, message: 'Description and photo are required' });
-    }
-
-    // Query untuk memasukkan data ke database
-    const journalsId = uuidv4();
-    const query = `
-        INSERT INTO journals (journals_id, user_id, photo_url, description, latitude, longitude) 
-        VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const values = [journalsId, req.user.userId, photoUrl, description, lat || null, lon || null];
-
-    // Simpan data ke database
-    db.query(query, values, (err, result) => {
-        if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: true, message: 'Database error' });
-        }
-
-        res.status(201).json({
-            error: false,
-            message: 'Story added successfully',
-            journalId: journalsId,
-        });
-    });
-};*/
-
-// Add New Story
-/*const addStory = (req, res) => {
-    const userId = req.user.userId;
-    // Memastikan file telah diupload ke GCS
-    console.log("addStory called");
-    if (!req.file) {
-        return res.status(400).json({ error: true, message: 'File upload failed' });
-    }
-
-    // Panggil fungsi uploadToGcs untuk upload ke GCS
-    uploadToGcs(req, res, (err) => {
-        if (err) {
-            return res.status(500).json({ error: true, message: 'Failed to upload image to GCS' });
-        }
-
-        // Setelah file diupload, ambil URL foto
-        const photoUrl = req.file?.cloudStoragePublicUrl;
-        const { description, lat, lon } = req.body;
-
-        // Validasi data
-        if (!description || !photoUrl) {
-            return res.status(400).json({ error: true, message: 'Description and photo are required' });
-        }
-
-        // Query untuk memasukkan data ke database
-        const journalsId = uuidv4();
-        const query = `
-            INSERT INTO journals (journals_id, user_id, photo_url, description, latitude, longitude) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
-        const values = [journalsId, userId, photoUrl, description, lat || null, lon || null];
-
-        // Simpan data ke database
-        db.query(query, values, (err, result) => {
-            if (err) {
-                console.error('Database error:', err);
-                return res.status(500).json({ error: true, message: 'Database error' });
-            }
-
-            res.status(201).json({
-                error: false,
-                message: 'Story added successfully',
-                journalId: journalsId,
-            });
-        });
-    });
-};*/
-
-const addStory = (req, res) => {
-    const userId = req.user.userId;
-    // Memastikan file telah diupload ke GCS
-    console.log("addStory called");
-    /*if (!req.file || !req.file.cloudStoragePublicUrl) {
-        return res.status(400).json({ error: true, message: 'File upload failed' });
-    }*/
-
-    // Setelah file diupload, ambil URL foto
+    const { description, latitude, longitude } = req.body;
     const photoUrl = req.file.cloudStoragePublicUrl;
-    const { description, lat, lon } = req.body;
 
-    // Validasi data
-    if (!photoUrl || !description) {
-        return res.status(400).json({ error: true, message: 'Description and photo are required' });
+    if (!description || description.trim() === '') {
+        return res.status(400).json({ error: true, message: 'Description is required' });
     }
 
-    // Query untuk memasukkan data ke database
-    const journalsId = uuidv4();
+    const journalId = uuidv4();
+    const userId = req.user.userId;
+
     const query = `
-        INSERT INTO journals (journals_id, user_id, photo_url, description, latitude, longitude) 
+        INSERT INTO journals (journals_id, user_id, photo_url, description, latitude, longitude)
         VALUES (?, ?, ?, ?, ?, ?)
     `;
-    const values = [journalsId, userId, photoUrl, description, lat || null, lon || null];
+    const values = [
+        journalId,
+        userId,
+        photoUrl,
+        description,
+        latitude || null,
+        longitude || null,
+    ];
 
-    // Simpan data ke database
-    db.query(query, values, (err, result) => {
+    db.query(query, values, (err) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: true, message: 'Database error' });
         }
 
+        // Mengirimkan respons berhasil
         res.status(201).json({
             error: false,
-            message: 'Story added successfully',
-            journalId: journalsId,
-            photoUrl: photoUrl,
+            message: 'Journal created successfully',
+            journalId: journalId
         });
     });
 };
 
+const createJournalByGuest = (req, res) => {
+    // Cek apakah ada token yang valid (untuk pengguna terautentikasi)
+    const userId = req.user ? req.user.userId : 'guest_' + uuidv4();
 
-
-// Add New Story dengan guest account
-/*const addStoryGuest = (req, res) => {
     const { description, lat, lon } = req.body;
-    const photoUrl = req.file?.cloudStoragePublicUrl;
+    const photoUrl = req.file ? req.file.cloudStoragePublicUrl : null;
 
-    if (!description || !photoUrl) {
-        return res.status(400).json({ error: true, message: 'Description and photo are required' });
+    if (!req.file) {
+        return res.status(400).json({ error: true, message: 'Image file is required' });
+    }
+    if (!description || description.trim() === '') {
+        return res.status(400).json({ error: true, message: 'Description is required' });
     }
 
+    const journalId = uuidv4();
     const query = `
-        INSERT INTO journals (photo_url, description, latitude, longitude) 
-        VALUES (NULL, ?, ?, ?, ?)`;
-    const values = [photoUrl, description, lat || null, lon || null];
-
-    db.query(query, values, (err, result) => {
+        INSERT INTO journals (journals_id, user_id, description, photo_url, latitude, longitude)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+        journalId,
+        userId,
+        description,
+        photoUrl,
+        lat || null,
+        lon || null
+    ];
+    db.query(query, values, (err) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: true, message: 'Database error' });
         }
 
-        res.status(201).json({ error: false, message: 'success' });
+        res.status(201).json({
+            error: false,
+            message: 'success',
+        });
     });
-};*/
+};
 
 // Get All Stories
 const getAllStories = (req, res) => {
@@ -257,7 +143,8 @@ const getStoryDetail = (req, res) => {
 };
 
 module.exports = {
-    addStory,
+    createJournal,
+    createJournalByGuest,
     getAllStories,
-    getStoryDetail,
+    getStoryDetail
 };

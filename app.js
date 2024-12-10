@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const journalsRoutes = require('./routes/journalsRoutes');
 const profileRoutes = require('./routes/profileRoutes');
-//const predictionRoutes = require('./routes/predictionRoutes');
+const predictionRoutes = require('./routes/predictionRoutes');
 
 const app = express();
 dotenv.config();
@@ -20,7 +20,7 @@ app.use(cors({
 app.use('/auth', authRoutes);
 app.use('/journal', journalsRoutes);
 app.use('/profile', profileRoutes);
-//app.use('/predict', predictionRoutes);
+app.use('/predict', predictionRoutes);
 
 app.get('/', (req, res) => {
     res.send('Server is running!');
