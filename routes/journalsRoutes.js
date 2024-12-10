@@ -12,9 +12,9 @@ const {
     getStoryDetail
 } = require('../Controllers/journalsController');
 
-router.post('/journal', authenticate, upload.single('file'), uploadToGcs, createJournal);
-router.post('/journal/guest', upload.single('photo'), uploadToGcs, createJournalByGuest);
-router.get('/journal', getAllStories);
-router.get('/journal/:journals_id', getStoryDetail);
+router.post('/', authenticate, upload.single('file'), uploadToGcs, createJournal);
+router.post('/guest', upload.single('photo'), uploadToGcs, createJournalByGuest);
+router.get('/', getAllStories);
+router.get('/:journals_id', getStoryDetail);
 
 module.exports = router;

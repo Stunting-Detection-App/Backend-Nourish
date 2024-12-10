@@ -3,7 +3,7 @@ const router = express.Router();
 const { predict, getHistory } = require('../Controllers/predictionController');
 const authenticate = require('../middleware/authenticate');
 
-router.post('/predict', authenticate, predict);
-router.get('/predict', authenticate, getHistory);
+router.post('/', authenticate, predict);
+router.get('/', authenticate, getHistory);
 
 module.exports = router;
