@@ -95,7 +95,7 @@ const login = (req, res) => {
         const token = jwt.sign(
           { userId: result[0].user_id, name: result[0].username },
           process.env.JWT_SECRET,
-          { expiresIn: '1h' }
+          { expiresIn: '1y' }
         );
         const sessionId = uuidv4();
         const insertSessionQuery = 'INSERT INTO sessions (sessi_id, user_id, token) VALUES (?, ?, ?)';
