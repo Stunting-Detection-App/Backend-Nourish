@@ -46,24 +46,6 @@
 | `longitude` | String   | Lokasi longitude (opsional).         |
 
 
-### **Create Stories by Guest**
-- **Endpoint**: `/journal/guest`
-- **Method**: `POST`
-- **Headers:**
-  ```json
-  {
-      "Authorization": "Bearer <your_token>",
-      "Content-Type": "multipart/form-data"
-  }
-- **Body (form-data):**
-| Key         | Type     | Description                           |
-|-------------|----------|---------------------------------------|
-| `photo`     | File     | Gambar jurnal (wajib).               |
-| `description` | String  | Deskripsi jurnal (wajib).            |
-| `latitude`  | String   | Lokasi latitude (opsional).          |
-| `longitude` | String   | Lokasi longitude (opsional).         |
-
-
 ### **Get Stories**
 - **Endpoint**: `/journal`
 - **Method**: `GET`
@@ -80,6 +62,15 @@
 - **Method**: `GET`
 
 
+## **Nutrition**
+- **Endpoint**: `/nutrition/classification`
+- **Method**: `GET`
+- **Query Parameters:**
+- `classification` (required): The classification level to filter food recommendations. Valid values are:
+  - `0` - Severely Stunted
+  - `1` - Stunted
+  - `2` - Normal
+  - `3` - High
 
 [Postman Url](https://drive.google.com/drive/folders/16HKeUbVj5d60eYlkc9oxulc6upzshpsr?usp=sharing) 
 
