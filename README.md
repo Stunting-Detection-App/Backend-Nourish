@@ -50,13 +50,12 @@
 ### **Get Stories**
 - **Endpoint**: `/journal`
 - **Method**: `GET`
-- **Query Parameters:**
-| Parameter | Type   | Description                                            |
-|-----------|--------|--------------------------------------------------------|
-| `page`    | Number | Halaman data (default: 1).                             |
-| `size`    | Number | Jumlah data per halaman (default: 10).                 |
-| `location`| Number | `1` untuk hanya menampilkan data dengan lokasi (default: 0). |
-
+- **Headers:**
+  ```json
+  {
+      "Authorization": "Bearer <your_token>",
+      "Content-Type": "multipart/form-data"
+  }
 
 ### **Get Detail Story**
 - **Endpoint**: `/journal/:journals_id`
