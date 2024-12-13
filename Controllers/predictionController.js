@@ -41,7 +41,7 @@ const predict = (req, res) => {
 const getHistory = (req, res) => {
   const query = `SELECT prediction_id, age, gender, height, result, description, user_id, created_at FROM predictions`;
 
-  db.query(query, (err, results) => {
+  db.query(query, [journals_id], (err, results) => {
       if (err) {
           console.error(err);
           return res.status(500).json({ error: true, message: 'Database error' });

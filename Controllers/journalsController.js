@@ -85,27 +85,19 @@ const createJournalByGuest = (req, res) => {
 
 // Get All Stories
 const getAllStories = (req, res) => {
-    const { page = 1, size = 10, location = 0 } = req.query;
-    const offset = (page - 1) * size;
-
-    let query = `
+    const userId = req.user.userId;
+    const query = `
         SELECT journals_id, user_id, photo_url, description, latitude, longitude, created_at 
         FROM journals 
-        LIMIT ?, ?`;
-    const values = [offset, parseInt(size)];
+        WHERE user_id = ?`;
 
-    if (location == 1) {
-        query = `
-            SELECT journals_id, user_id, photo_url, description, latitude, longitude, created_at 
-            FROM journals 
-            WHERE latitude IS NOT NULL AND longitude IS NOT NULL 
-            LIMIT ?, ?`;
-    }
-
-    db.query(query, values, (err, results) => {
+    db.query(query, [userId], (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: true, message: 'Database error' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: true, message: 'No stories found' });
         }
 
         res.status(200).json({
