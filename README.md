@@ -36,6 +36,7 @@ Cloud SQL is used to manage structured data related to nutrition, user profiles,
 - **Security:** Sensitive user data is stored securely in Google Cloud Storage and Cloud SQL, with proper encryption and access controls.
 
 
+
 # **Nourish App - Backend API Documentation**
 
 ## **Authentication (Auth)**
@@ -63,9 +64,9 @@ Cloud SQL is used to manage structured data related to nutrition, user profiles,
 
 
 
-## **Stories**
+## **Journal**
 
-### **Create Stories**
+### **Create Journal**
 - **Endpoint**: `/journal`
 - **Method**: `POST`
 - **Headers:**
@@ -85,7 +86,7 @@ Cloud SQL is used to manage structured data related to nutrition, user profiles,
 | `longitude` | String   | Lokasi longitude (opsional).         |
 
 
-### **Get Stories**
+### **Get Journal**
 - **Endpoint**: `/journal`
 - **Method**: `GET`
 - **Headers:**
@@ -95,9 +96,6 @@ Cloud SQL is used to manage structured data related to nutrition, user profiles,
       "Content-Type": "multipart/form-data"
   }
 
-### **Get Detail Story**
-- **Endpoint**: `/journal/:journals_id`
-- **Method**: `GET`
 
 
 ## **Nutrition**
